@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
     All of the methods provided by the REST client are implemented (and then some).
 
     The name comes from the (classic) 1994 Kurt Russel film Stargate, which is heavily inspired by Egyptian mythology. As Anubis is one of the gods featured in the film, 
-    the name was chosen to be an alternative to Stargate.
+    his name was chosen to be an alternative to Stargate.
   DESC
   s.files         = `git ls-files`.split("\n").reject{ |f| f =~ /gemspec/ }
   s.require_paths = ['lib']
