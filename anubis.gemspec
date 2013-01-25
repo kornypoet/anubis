@@ -18,5 +18,6 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files`.split("\n").reject{ |f| f =~ /gemspec/ }
   s.require_paths = ['lib']
   
-  s.add_dependency('thrift', '~> 0.9')
+  s.add_dependency('thrift',   '~> 0.9')
+  s.add_dependency('gorillib', '>= 0.4.2')
 end
