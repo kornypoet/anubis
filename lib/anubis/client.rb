@@ -10,7 +10,7 @@ module Anubis
     end
 
     def reset_thrift_protocol!
-      @socket         = Thrift::Socket.new(@host, @port)
+      @socket         = Thrift::Socket.new(host, port)
       @transport      = Thrift::BufferedTransport.new(@socket)
       @iprot = @oprot = Thrift::BinaryProtocol.new(@transport)
       self
@@ -38,7 +38,8 @@ module Anubis
     def safely_send(message, *args)
       begin
         response = send(message, *args)
-        response || true
+        response = true if response.nil?
+        response
       rescue => e
         warn e.message
         reconnect
@@ -47,45 +48,7 @@ module Anubis
     end
 
     def to_s
-      "#<#{self.class}:#{object_id} host:#{@host.inspect} port:#{@port}>"
+      "#<#{self.class}:#{object_id} host:#{host.inspect} port:#{port}>"
     end
   end
 end
-
-# compact
-# majorCompact
-
-# getTableRegions
-# get
-# getVer
-# getVerTs
-# getRow
-# getRowWithColumns
-# getRowTs
-# getRowWithColumnsTs
-# getRows
-# getRowsWithColumns
-# getRowsTs
-# getRowsWithColumnsTs
-# mutateRow
-# mutateRowTs
-# mutateRows
-# mutateRowsTs
-# atomicIncrement
-# deleteAll
-# deleteAllTs
-# deleteAllRow
-# increment
-# incrementRows
-# deleteAllRowTs
-# scannerOpenWithScan
-# scannerOpen
-# scannerOpenWithStop
-# scannerOpenWithPrefix
-# scannerOpenTs
-# scannerOpenWithStopTs
-# scannerGet
-# scannerGetList
-# scannerClose
-# getRowOrBefore
-# getRegionInfo
