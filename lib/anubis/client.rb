@@ -16,7 +16,7 @@ module Anubis
       self
     end
     
-    def connect!
+    def connect
       @transport.open
       true
     end    
@@ -25,14 +25,25 @@ module Anubis
       @transport.open?      
     end
 
-    def disconnect!
+    def disconnect
       @transport.close
       true
     end
 
-    def reconnect!
-      disconnect! if connected?
-      connect!
+    def reconnect
+      disconnect if connected?
+      connect
+    end
+
+    def safely_send(message, *args)
+      begin
+        response = send(message, *args)
+        response || true
+      rescue => e
+        warn e.message
+        reconnect
+        false
+      end
     end
 
     def to_s
@@ -43,6 +54,7 @@ end
 
 # compact
 # majorCompact
+
 # getTableRegions
 # get
 # getVer
