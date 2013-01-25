@@ -3,21 +3,26 @@ module Anubis
 
     attr_reader :table, :row_key, :columns
 
-    def self.from_row row
+    def self.from_row(row, versions)
       table   = row.table
       row_key = row.key
       columns = row.cells.empty? ? nil : row.cells.map(&:fullname)
-      new(table, row_key, columns)
+      new(table, row_key, columns, versions)
     end
    
-    def initialize(table, row_key, columns)
-      @table   = table
-      @row_key = row_key      
-      @columns = columns
+    def initialize(table, row_key, columns, versions)
+      @table    = table
+      @row_key  = row_key      
+      @columns  = columns
+      @versions = versions
     end
     
     def perform
-      results  = Connection.getRowWithColumns(table, row_key, columns, {})
+      if versions
+        results = Connection.getRowWithColumns(table, row_key, columns, {})
+      else
+        results = Connection.getRowWithColumns(table, row_key, columns, {})
+      end
       Row.from_result(table, results.first)
     end
 
