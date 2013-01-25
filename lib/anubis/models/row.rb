@@ -22,9 +22,16 @@ module Anubis
     def to_hash
       { key: key, cells: cells.map(&:to_hash) }
     end
+
+    def to_s
+      "#{key} x [ #{cells.map(&:fullname).join(', ')} ]"
+    end
     
-    def get
-      Get.from_row(self).perform
+    #
+    # Query operations
+    #
+    def get(versions = nil)
+      Get.from_row(self, versions).perform
     end
 
     def put value
@@ -39,30 +46,5 @@ module Anubis
       Delete.from_row(self).perform
     end
     
-  end
-
-  class Cell
-    
-    attr_reader :column, :qualifier, :value, :timestamp
-    
-    def initialize(column, qualifier = nil, value = nil, timestamp = nil)
-      @column    = column
-      @qualifier = qualifier
-      @value     = value
-      @timestamp = timestamp
-    end
-
-    def fullname
-      [column, qualifier.to_s].join(':')
-    end
-
-    def to_hash
-      { 
-        column:    column, 
-        qualifier: qualifier,        
-        value:     value,        
-        timestamp: timestamp
-      }
-    end
   end
 end
