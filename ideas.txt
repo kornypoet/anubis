@@ -1,0 +1,29 @@
+class AdActivities 
+  include Anubis::Table
+
+  column :a do
+    versions     1
+    bloom_filter DefaultBloomFilter
+    compression  :none
+    in_memory    false
+    cached       false
+    ttl          30.days
+  end
+
+end   
+
+class AdActivity
+  include Anubis::Model
+  
+  belongs_to :a
+  row_key   { [pid, type, cookie].join(':') }    
+  qualifier { timestamp.reverse             }
+  value     { timestamp                     }
+  
+end
+
+# config/database.yml
+---
+hbase:
+  host: flying-dutchman-storage-worker-0.spongecell.chimpy.us
+  port: 9090
