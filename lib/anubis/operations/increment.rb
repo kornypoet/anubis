@@ -5,30 +5,31 @@ module Anubis
     #
     def increment(amt = 1)
       self.extend Increment
-      perform(amt)
+      set_amount amt
+      perform
     end
     
     module Increment
-    
-    attr_reader :table, :row_key, :column, :amt
-    
-    def self.from_row(row, amt)
-      table   = row.table
-      row_key = row.key
-      cell    = row.cells.first
-      columns = cell.fullname
-      new(table, row_key, columns, amt)
+
+      def set_amount amt
+        @put_amount = amt
+      end
+
+      def validate
+        true
+      end
+      
+      def execute
+        increments   = @row_keys.product(mapping)        
+        @next_values = increments.map do |key, column|
+          # This has to be done iteratively because the batch increment is broken in Thrift
+          Connection.safely_send(:atomicIncrement, @table, key, column, @put_amount)      
+        end
+      end
+      
+      def prepare_results
+        @next_values
+      end
     end
-   
-    def initialize(table, row_key, column, amt)
-      @table   = table
-      @row_key = row_key      
-      @column  = column
-      @amt     = amt
-    end
-    
-    def perform
-      results = Connection.atomicIncrement(table, row_key, column, amt)      
-    end    
   end
 end
