@@ -1,6 +1,7 @@
 require 'anubis/operations/get'
-# require 'anubis/operations/put'
-# require 'anubis/operations/delete'
+require 'anubis/operations/put'
+require 'anubis/operations/delete'
+require 'anubis/operations/increment'
 # require 'anubis/operations/scan'
 
 module Anubis
@@ -37,16 +38,6 @@ module Anubis
 
     def to_s
       "Op: #{@table} | [ #{@row_keys.join(', ')} ] x [ #{mapping.join(', ')} ]"
-    end
-
-    def handler_for operation
-      handler = self.class.constants.detect{ |klass| klass.to_s.underscore == operation.to_s }
-      self.extend self.class.const_get(handler)
-      self
-    end
-
-    def get
-      handler_for(:get).perform
     end
     
     def perform

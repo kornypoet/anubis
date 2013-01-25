@@ -1,5 +1,13 @@
 module Anubis
-  class Operation
+  class Operation    
+    #
+    # Mixin how to 'get'
+    #
+    def get
+      self.extend Get
+      perform
+    end
+
     module Get
 
       def validate
@@ -15,6 +23,6 @@ module Anubis
         @results
       end
 
-    end
+    end    
   end
 end
