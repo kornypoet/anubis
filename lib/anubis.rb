@@ -17,22 +17,40 @@ module Anubis
       Connection.reset_thrift_protocol!
       self
     end
+
+    def connect!
+      Connection.safely_send(:connect)
+    end
     
     def tables
       Connection.safely_send(:getTableNames).map{ |table| Table.from_existing table }
     end
     
-    def connect!
-      Connection.safely_send(:connect)
-    end
-
-    def get(options = {})
+    def operation params
       Operation.new(options[:table]).
         columns(options[:columns]).
         qualifier(options[:qualifier]).
-        rows(options[:rows]).
-        get
+        rows(options[:rows])        
     end
     
+    def get(params = {})
+      operation(params).get
+    end
+
+    def put(params = {})
+      operation(params).put
+    end
+
+    def increment(params = {})
+      operation(params).increment
+    end
+    
+    def delete(params = {})
+      operation(params).delete
+    end
+
+    def scan(params = {})
+      operation(params).scan
+    end
   end
 end
