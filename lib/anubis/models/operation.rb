@@ -18,11 +18,7 @@ module Anubis
     end
     
     def perform
-      if versions
-        results = Connection.getRowWithColumns(table, row_key, columns, {})
-      else
-        results = Connection.getRowWithColumns(table, row_key, columns, {})
-      end
+      results = Connection.getRowWithColumns(table, row_key, columns, {})      
       Row.from_result(table, results.first)
     end
 
