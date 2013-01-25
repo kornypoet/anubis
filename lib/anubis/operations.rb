@@ -1,7 +1,7 @@
 require 'anubis/operations/get'
 require 'anubis/operations/put'
-require 'anubis/operations/delete'
-require 'anubis/operations/increment'
+# require 'anubis/operations/delete'
+# require 'anubis/operations/increment'
 # require 'anubis/operations/scan'
 
 module Anubis
@@ -26,10 +26,6 @@ module Anubis
     def rows(*keys)
       @row_keys = keys
       self
-    end
-
-    def op= operation
-      @operation = operation
     end
       
     def mapping
