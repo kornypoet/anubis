@@ -1,41 +1,33 @@
 module Anubis
   class Table
 
-    def self.find name
-      from_existing(name) if Connection.getTableNames.include? name
+    attr_reader :name, :column_group, :column_details
+
+    def self.find table
+      from_existing(table) if Connection.safely_send(:getTableNames).include? table
     end      
 
-    def self.find_or_create(name, *columns)
-      if table = find(name)
-        table
+    def self.find_or_create(table, *columns)
+      if t = find(table)
+        t
       else
-        table = new(name, *columns)
-        table.create
+        t = new(table, *columns)
+        t.create
       end
-      table
+      t
     end
 
     def self.from_existing table
-      t = new(table)
-      t.columns = ColumnGroup.from_existing(table)
-      t
+      new(table, *ColumnDetails.from_existing(table))
     end
     
-    def initialize(name, *columns)
-      @name    = name
-      @columns = ColumnGroup.new(name, *columns)
-    end
-
-    def columns= group
-      @columns = group
-    end
-
-    def columns(*names)
-      @columns.select_by_name(*names)
+    def initialize(table_name, *details)
+      @name           = table_name
+      @column_details = details.map{ |col| col.is_a?(ColumnDetails) ? col : ColumnDetails.new(name: col.to_s) }
     end
 
     def create
-      Connection.createTable(@name, columns.to_a)
+      Connection.safely_send(:createTable, name, column_details)
       true
     end
 
@@ -43,43 +35,53 @@ module Anubis
       raise NotImplementedError
     end
     
-    def row(row_key)
-      columns.qualifier.row(row_key)
-    end
-    
-    def qualifier(qual)
-      columns.qualifier(qual)
-    end
-    
     def delete
       disable
-      Connection.deleteTable @name
+      Connection.safely_send(:deleteTable, name)
       true
     end
     
     def exists?
-      Connection.getTableNames.include? @name
+      Connection.safely_send(:getTableNames).include? name
     end
 
     def enabled?
-      exists? && Connection.isTableEnabled(@name)
+      exists? && Connection.safely_send(:isTableEnabled, name) 
     end
 
     def disable
-      Connection.disableTable @name
+      Connection.safely_send(:disableTable, name)
     end
 
     def enable
-      Connection.enableTable @name
+      Connection.safely_send(:enableTable, name)
     end
     
     def describe
-      { name: @name, columns: @columns.describe }
+      { name: name, columns: column_details.map(&:describe) }
     end
 
     def to_s
-      "#<#{self.class} name:#{@name}, columns:#{@columns}>"
+      "<#{self.class}[ #{name} ] => columns#{column_group.serialize}>"
+    end
+
+    #
+    # Query operations
+    #
+    def column_group
+      ColumnGroup.new(name, *column_details.map(&:pretty_name))
     end
     
+    def columns(*names)
+      column_group.select_by_name(*names)
+    end
+    
+    def qualifier qual
+      columns.qualifier qual
+    end
+    
+    def row row_key
+      columns.qualifier.row row_key
+    end
   end
 end
