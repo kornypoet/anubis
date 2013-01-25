@@ -24,7 +24,7 @@ module Anubis
           mutate = mapping.map{ |column| Apache::Hadoop::Hbase::Thrift::Mutation.new(column: column, value: @put_value) } 
           Apache::Hadoop::Hbase::Thrift::BatchMutation.new(row: key, mutations: mutate)
         end
-        Connection.mutateRows(@table, mutations, {})        
+        Connection.safely_send(:mutateRows, @table, mutations, {})        
       end
       
       def prepare_results
