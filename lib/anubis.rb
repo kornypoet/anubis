@@ -16,12 +16,12 @@ module Anubis
       self
     end
     
-    def list_tables
-      Connection.getTableNames
+    def tables
+      Connection.safely_send(:getTableNames).map{ |table| Table.from_existing table }
     end
     
     def connect!
-      Connection.connect!
+      Connection.safely_send(:connect)
     end
 
   end
