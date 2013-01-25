@@ -1,27 +1,35 @@
 module Anubis
   class Operation
-    module Put
-
-    attr_reader :table, :row_key, :mutation
-
-    def self.from_row(row, value)
-      cell    = row.cells.first
-      table   = row.table
-      row_key = row.key
-      columns = cell.fullname
-      new(table, row_key, columns, value)
-    end
-
-    def initialize(table, row_key, column, value)
-      @table    = table
-      @row_key  = row_key     
-      @mutation = [Apache::Hadoop::Hbase::Thrift::Mutation.new(column: column, value: value)]
+    #
+    # Mixin how to 'put'
+    #
+    def put val
+      self.extend Put
+      set_value val
+      self.perform
     end
     
-    def perform
-      Connection.mutateRow(table, row_key, mutation, {})
-      true
-    end
+    module Put
 
+      def set_value val
+        @put_value = val
+      end
+      
+      def validate
+        true
+      end
+      
+      def execute
+        mutations = @row_keys.map do |key| 
+          mutate = mapping.map{ |column| Apache::Hadoop::Hbase::Thrift::Mutation.new(column: column, value: @put_value) } 
+          Apache::Hadoop::Hbase::Thrift::BatchMutation.new(row: key, mutations: mutate)
+        end
+        Connection.mutateRows(@table, mutations, {})        
+      end
+      
+      def prepare_results
+        true
+      end
+    end
   end
 end
