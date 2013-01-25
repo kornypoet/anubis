@@ -2,28 +2,59 @@ module Anubis
   class Table
 
     def self.find name
-      if Connection.getTableNames.include? name       
-        new(name, *Column.from_existing_columns(name)) 
-      end
+      from_existing(name) if Connection.getTableNames.include? name
     end      
 
     def self.find_or_create(name, *columns)
-      table = find(name) || new(name, *columns)
-      table.create
+      if table = find(name)
+        table
+      else
+        table = new(name, *columns)
+        table.create
+      end
+      table
+    end
+
+    def self.from_existing table
+      t = new(table)
+      t.columns = ColumnGroup.from_existing(table)
+      t
     end
     
     def initialize(name, *columns)
       @name    = name
-      @columns = columns.map{ |c| c.is_a?(Column) ? c : Column.new(name: c.to_s) }
+      @columns = ColumnGroup.new(name, *columns)
+    end
+
+    def columns= group
+      @columns = group
+    end
+
+    def columns(*names)
+      @columns.select_by_name(*names)
     end
 
     def create
-      Connection.createTable(@name, @columns)
+      Connection.createTable(@name, columns.to_a)
+      true
     end
 
+    def update(options = {})
+      raise NotImplementedError
+    end
+    
+    def row(row_key)
+      columns.qualifier.row(row_key)
+    end
+    
+    def qualifier(qual)
+      columns.qualifier(qual)
+    end
+    
     def delete
       disable
       Connection.deleteTable @name
+      true
     end
     
     def exists?
@@ -43,11 +74,11 @@ module Anubis
     end
     
     def describe
-      { name: @name, columns: @columns.map(&:describe) }
+      { name: @name, columns: @columns.describe }
     end
 
     def to_s
-      "#<#{self.class}:#{object_id} name:#{@name}, columns:#{@columns}>"
+      "#<#{self.class} name:#{@name}, columns:#{@columns}>"
     end
     
   end
