@@ -1,31 +1,39 @@
 module Anubis
   class Table
 
-    attr_reader :name, :column_group, :column_details
+    attr_reader :name, :column_details
 
-    def self.find table
-      from_existing(table) if Connection.safely_send(:getTableNames).include? table
-    end      
-
-    def self.find_or_create(table, *columns)
-      if t = find(table)
+    #
+    # Class-level lookup
+    #
+    class << self
+      def find table
+        from_existing(table) if Connection.safely_send(:getTableNames).include? table
+      end      
+      
+      def find_or_create(table, *columns)
+        if t = find(table)
+          t
+        else
+          t = new(table, *columns)
+          t.create
+        end
         t
-      else
-        t = new(table, *columns)
-        t.create
       end
-      t
+      
+      def from_existing table
+        new(table, *ColumnDetails.from_existing(table))
+      end
     end
 
-    def self.from_existing table
-      new(table, *ColumnDetails.from_existing(table))
-    end
-    
     def initialize(table_name, *details)
       @name           = table_name
       @column_details = details.map{ |col| col.is_a?(ColumnDetails) ? col : ColumnDetails.new(name: col.to_s) }
     end
 
+    #
+    # CRUD operations
+    #
     def create
       Connection.safely_send(:createTable, name, column_details)
       true
@@ -56,32 +64,44 @@ module Anubis
     def enable
       Connection.safely_send(:enableTable, name)
     end
-    
+
+    #
+    # Information
+    #
     def describe
       { name: name, columns: column_details.map(&:describe) }
     end
 
+    def column_group
+      column_details.map(&:pretty_name)
+    end
+
     def to_s
-      "<#{self.class}[ #{name} ] => columns#{column_group.serialize}>"
+      "<#{self.class}[ #{name} ] => columns#{column_group}>"
     end
 
     #
-    # Query operations
+    # Operation builder
     #
-    def column_group
-      ColumnGroup.new(name, *column_details.map(&:pretty_name))
+    def operation
+      Operation.new(name)
+    end
+
+    def select_by_name names
+      return column_group if names.empty?
+      names.map{ |name| column_group.detect{ |col| col == name.to_s } }.compact      
+    end
+
+    def columns(*names)      
+      operation.columns(*select_by_name(names))
     end
     
-    def columns(*names)
-      column_group.select_by_name(*names)
+    def qualifier(qual = nil)
+      columns.qualifier(qual)
     end
-    
-    def qualifier qual
-      columns.qualifier qual
-    end
-    
-    def row row_key
-      columns.qualifier.row row_key
+
+    def rows(*keys)
+      qualifier.rows(*keys)
     end
   end
 end
