@@ -1,6 +1,4 @@
 require 'anubis/models/table'
-require 'anubis/models/row'
-require 'anubis/models/operation'
 require 'anubis/models/bloom_filter'
 require 'anubis/models/column_details'
 require 'anubis/models/cell'
