@@ -15,8 +15,11 @@ module Anubis
       end
 
       def execute
-        deletes = @row_keys.product(mapping)
-        Connection.safely_send(:deleteAll, @table, row_key, columns, {})
+        mutations = @row_keys.map do |key| 
+          mutate = mapping.map{ |column| Apache::Hadoop::Hbase::Thrift::Mutation.new(column: column, isDelete: true) } 
+          Apache::Hadoop::Hbase::Thrift::BatchMutation.new(row: key, mutations: mutate)
+        end
+        Connection.safely_send(:mutateRows, @table, mutations, {})        
       end
 
       def prepare_results
