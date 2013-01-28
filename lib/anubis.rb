@@ -34,15 +34,15 @@ module Anubis
     end
     
     def get(params = {})
-      operation(params).get
+      operation(params).get params[:versions]
     end
 
     def put(params = {})
-      operation(params).put
+      operation(params).put params[:value]
     end
 
     def increment(params = {})
-      operation(params).increment
+      operation(params).increment params[:amount]
     end
     
     def delete(params = {})
@@ -50,7 +50,7 @@ module Anubis
     end
 
     def scan(params = {})
-      operation(params).scan
+      operation(params).scan params
     end
   end
 end
