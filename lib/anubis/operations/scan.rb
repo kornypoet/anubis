@@ -28,19 +28,14 @@ module Anubis
         true
       end
 
-      def create_scanner
-        Connection.safely_send(:scannerOpenWithStop, @table, @scan_options[:from], @scan_options[:to], mapping, {})
-      end
-
       def execute
-        scanner = create_scanner
-        until (results = Connection.safely_send(:scannerGetList, scanner, batch_size)).empty?
-          @scan_processor.call(results) if @scan_processor
-        end
+        scanner  = Anubis::Scanner.new(@table, @scan_options[:from], @scan_options[:to], mapping, batch_size)
+        # If given a processor, iterate over the scan using that, otherwise return the scanner
+        @results = @scan_processor ? scanner.each_batch(&@scan_processor) : scanner          
       end
       
       def prepare_results
-        true
+        @results
       end
     end
   end
