@@ -103,5 +103,9 @@ module Anubis
     def rows(*keys)
       qualifier.rows(*keys)
     end
+    
+    def scan(options = {}, &blk)
+      qualifier.scan(options, &blk)
+    end
   end
 end
