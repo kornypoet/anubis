@@ -2,7 +2,7 @@ require 'anubis/operations/get'
 require 'anubis/operations/increment'
 require 'anubis/operations/put'
 require 'anubis/operations/delete'
-# require 'anubis/operations/scan'
+require 'anubis/operations/scan'
 
 module Anubis
   class Operation
