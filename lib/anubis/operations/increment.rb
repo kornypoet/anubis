@@ -21,9 +21,10 @@ module Anubis
       
       def execute
         increments   = @row_keys.product(mapping)        
-        @next_values = increments.map do |key, column|
+        @next_values = increments.inject({}) do |result, (key, column)|
           # This has to be done iteratively because the batch increment is broken in Thrift
-          Connection.safely_send(:atomicIncrement, @table, key, column, @put_amount)      
+          result[key] = Connection.safely_send(:atomicIncrement, @table, key, column, @put_amount)      
+          result
         end
       end
       
