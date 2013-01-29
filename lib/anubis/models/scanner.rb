@@ -16,12 +16,27 @@ module Anubis
     def next_batch
       return nil unless has_next?
       batch = Connection.safely_send(:scannerGetList, scan_id, batch_size)
-      batch.empty? ? close : batch
+      batch.empty? ? close : parse_results(batch)
     end
 
     def each_batch(&blk)
       while batch = next_batch
         blk.call(batch) if block_given?
+      end
+    end
+
+    def parse_results batch
+      batch.inject({}) do |prep, data| 
+        if data.is_a?(Apache::Hadoop::Hbase::Thrift::TRowResult)
+          prep[data.row] = data.columns.map do |column, cell| 
+            { 
+              column:    column, 
+              value:     cell.value, 
+              timestamp: cell.timestamp 
+            }
+          end
+          prep
+        end            
       end
     end
 
