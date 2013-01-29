@@ -19,22 +19,46 @@ module Anubis
         true
       end
 
-      def execute
-        if @get_versions && @get_versions.is_a?(Numeric)
-          versioned_gets = @row_keys.product(mapping)
-          @results = versioned_gets.map do |row_key, column|
-            Connection.safely_send(:getVer, @table, row_key, column, @get_versions, {})
+      def versioned_get
+        versioned_gets = @row_keys.product(mapping)        
+        @results = versioned_gets.inject({}) do |result, (row_key, column)|
+          cells = Connection.safely_send(:getVer, @table, row_key, column, @get_versions, {})
+          unless cells.empty?
+            cells.map!{ |cell| { column: column, value: cell.value, timestamp: cell.timestamp } }
           end
-        else
-          columns  = mapping.empty? ? nil : mapping
-          @results = Connection.safely_send(:getRowsWithColumns, @table, @row_keys, columns, {})
+          result[row_key] = cells
+          result
         end
+      end
+      
+      def columned_get
+        columns  = mapping.empty? ? nil : mapping
+        @results = Connection.safely_send(:getRowsWithColumns, @table, @row_keys, columns, {})
+        if @results.empty?        
+          puts "oh shit"
+        else
+          @results = @results.inject({}) do |prep, data| 
+            if data.is_a?(Apache::Hadoop::Hbase::Thrift::TRowResult)
+              prep[data.row] = data.columns.map do |column, cell| 
+                { 
+                  column:    column, 
+                  value:     cell.value, 
+                  timestamp: cell.timestamp 
+                }
+              end
+              prep
+            end            
+          end
+        end
+      end
+
+      def execute
+        (@get_versions && @get_versions.is_a?(Numeric)) ? versioned_get : columned_get
       end
       
       def prepare_results
         @results
-      end
-
-    end    
+      end    
+    end
   end
 end
