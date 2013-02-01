@@ -28,6 +28,36 @@ module Anubis
       self.bloomFilterNbHashes   = @bloom_filter.hashes
     end
 
+    def versions(ver = nil)
+      return self.maxVersions if ver.nil?
+      self.maxVersions = ver
+    end
+
+    def in_memory(mem = nil)
+      return self.inMemory if mem.nil?
+      self.inMemory = mem
+    end
+
+    def cached(cache = nil)
+      return self.blockCacheEnabled if cache.nil?
+      self.blockCacheEnabled = cache
+    end
+
+    def ttl(t = nil)
+      return self.timeToLive if t.nil?
+      self.timeToLive = t
+    end
+
+    def bloom_filter(bloom = nil)
+      return @bloom_filter if bloom.nil?
+      @bloom_filter = bloom
+    end
+
+    def compress(com = nil)
+      return self.compression if com.nil?
+      self.compression = com.to_s.upcase
+    end
+
     def pretty_name
       name.gsub(/:/, '')
     end
