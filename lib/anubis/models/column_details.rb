@@ -51,6 +51,10 @@ module Anubis
     def bloom_filter(bloom = nil)
       return @bloom_filter if bloom.nil?
       @bloom_filter = bloom
+      self.bloomFilterType       = @bloom_filter.type
+      self.bloomFilterVectorSize = @bloom_filter.vector_size
+      self.bloomFilterNbHashes   = @bloom_filter.hashes
+      @bloom_filter
     end
 
     def compress(com = nil)
