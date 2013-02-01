@@ -18,7 +18,21 @@ module Anubis
       self
     end
 
+    def deploy_pack?
+      defined?(Wukong::Deploy) && Wukong::Deploy.respond_to(:booted?) && Wukong::Deploy.booted?
+    end
+
+    def configure_from_deploy
+      host = Wukong::Deploy.settings[:hbase][:thrift][:host] rescue nil
+      port = Wukong::Deploy.settings[:hbase][:thrift][:port] rescue nil
+      configure do |c|
+        c.host = host if host
+        c.port = port if port
+      end
+    end
+
     def connect!
+      configure_from_deploy if deploy_pack?
       Connection.safely_send(:connect)
     end
     
