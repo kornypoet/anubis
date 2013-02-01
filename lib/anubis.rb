@@ -19,7 +19,7 @@ module Anubis
     end
 
     def deploy_pack?
-      defined?(Wukong::Deploy) && Wukong::Deploy.respond_to(:booted?) && Wukong::Deploy.booted?
+      defined?(Wukong::Deploy) && Wukong::Deploy.respond_to?(:booted?) && Wukong::Deploy.booted?
     end
 
     def configure_from_deploy
