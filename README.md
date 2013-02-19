@@ -38,10 +38,10 @@ To install the gem locally:
 
 ## Usage
 
-First configure Anubis:
+First, configure the Anubis connection:
 
 ```ruby
-# By default, without configuration Anubis will attempt to connect to localhost at port 9090	
+# By default, without configuration, Anubis will attempt to connect to localhost at port 9090	
 Anubis.configure do |c|
   c.host = 'your.moms.server'
   c.port = 9090	  
@@ -52,4 +52,46 @@ Make sure you connect to HBase before creating tables or inserting rows:
 
 ```ruby
 Anubis.connect!
+```
+
+To see a list of the tables:
+
+```ruby
+Anubis.tables	
+```
+
+Anubis comes with a `Table` model with easy to use dsl methods:
+
+```ruby
+t = Anubis::Table.find_or_create 'my_table', 'column_name'
+#=> <Anubis::Table[ my_table ] => columns["column_name"]>
+t.exists?
+#=> true
+t.describe
+#=> {:name=>"my_table", :columns=>[{:name=>"column_name", :versions=>3, :compression=>"NONE", :in_memory=>false, :ttl=>-1, :cached=>false, :bloom_filter=>{:type=>"NONE", :vector_size=>0, :hashes=>0}}]}
+t.delete
+#=> true
+t.exists?
+#=> false
+```
+
+## Operations
+
+Operations are possible on a `Table` or on the top-level `Anubis` module:
+
+```ruby
+t = Anubis::Table.find_or_create 'my_table', 'column_name', 'another_column'
+op = t.columns(:another_column).qualifer(:my_qualifier).rows('my:row:key')
+op.put 'some_value'
+op.get
+#=> {"foo:bar"=>[{:column=>"column_name:", :value=>"some_value", :timestamp=>1361293380609}]}
+```
+
+Operations are built upon rows, which are created from a cross-product of row_key and full column names. When you create an operation from a table, the table name and column families are selected by default.
+
+```ruby
+t = Anubis::Table.find_or_create 'my_table', 'column_name', 'another_column'
+op = t.qualifer(:my_qualifier).rows('my:row:key')
+#=> Op: my_table | [ my:row:key ] x [ column_name:my_qualifier, another_column:my_qualifier ]
+op.get
 ```
