@@ -84,7 +84,7 @@ t = Anubis::Table.find_or_create 'my_table', 'column_name', 'another_column'
 op = t.columns(:another_column).qualifer(:my_qualifier).rows('my:row:key')
 op.put 'some_value'
 op.get
-#=> {"foo:bar"=>[{:column=>"column_name:", :value=>"some_value", :timestamp=>1361293380609}]}
+#=> {"my:row:key"=>[{:column=>"column_name:", :value=>"some_value", :timestamp=>1361293380609}]}
 ```
 
 Operations are built upon rows, which are created from a cross-product of row_key and full column names. When you create an operation from a table, the table name and column families are selected by default.
