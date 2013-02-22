@@ -18,21 +18,9 @@ module Anubis
       self
     end
 
-    def deploy_pack?
-      defined?(Wukong::Deploy) && Wukong::Deploy.respond_to?(:booted?) && Wukong::Deploy.booted?
-    end
-
-    def configure_from_deploy
-      host = Wukong::Deploy.settings[:hbase][:thrift][:host] rescue nil
-      port = Wukong::Deploy.settings[:hbase][:thrift][:port] rescue nil
-      configure do |c|
-        c.host = host if host
-        c.port = port if port
-      end
-    end
-
     def connect!
       configure_from_deploy if deploy_pack?
+      configure_from_rails  if rails?
       Connection.safely_send(:connect)
     end
     
@@ -66,5 +54,35 @@ module Anubis
     def scan(params = {})
       operation(params).scan params
     end
+
+  private
+
+    def deploy_pack?
+      defined?(Wukong::Deploy) && Wukong::Deploy.respond_to?(:booted?) && Wukong::Deploy.booted?
+    end
+
+    def rails?
+      defined?(Rails) && Rails.respond_to?(:root) && Rails.root
+    end
+
+    def configure_from_deploy
+      host = Wukong::Deploy.settings[:hbase][:thrift][:host] rescue nil
+      port = Wukong::Deploy.settings[:hbase][:thrift][:port] rescue nil
+      configure do |c|
+        c.host = host if host
+        c.port = port if port
+      end
+    end
+
+    def configure_from_rails
+      config = Rails.configuration.database_configuration      
+      host   = config[Rails.env]['thrift']['host'] rescue nil
+      port   = config[Rails.env]['thrift']['host'] rescue nil
+      configure do |c|
+        c.host = host if host
+        c.port = port if port
+      end 
+    end
+
   end
 end
