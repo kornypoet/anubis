@@ -5,36 +5,34 @@ require 'anubis/thrift'
 require 'anubis/client'
 require 'anubis/models'
 require 'anubis/operations'
+require 'anubis/errors'
 
 module Anubis
-
-  Connection = Client.new unless defined? Connection  
   
   class << self
+
+    def connection 
+      @connection ||= Client.new
+    end
     
     def configure(&blk)
-      yield Connection if block_given?
-      Connection.reset_thrift_protocol!
+      if block_given?
+        yield connection 
+        connection.reset_thrift_protocol!
+      end
       self
     end
 
     def connect!
-      configure_from_deploy if deploy_pack?
-      configure_from_rails  if rails?
-      Connection.safely_send(:connect)
+      configure_from(deploy_config) if deploy_pack?
+      configure_from(rails_config)  if rails?
+      connection.connect
     end
     
     def tables
-      Connection.safely_send(:getTableNames).map{ |table| Table.from_existing table }
+      connection.safely_send(:getTableNames).map{ |table| Table.from_existing table }
     end
-    
-    def operation params
-      Operation.new(options[:table]).
-        columns(options[:columns]).
-        qualifier(options[:qualifier]).
-        rows(options[:rows])        
-    end
-    
+        
     def get(params = {})
       operation(params).get params[:versions]
     end
@@ -57,6 +55,13 @@ module Anubis
 
   private
 
+    def operation params
+      Operation.new(params[:table]).
+        columns(*params[:columns]).
+        qualifier(params[:qualifier]).
+        rows(*params[:rows])        
+    end
+
     def deploy_pack?
       defined?(Wukong::Deploy) && Wukong::Deploy.respond_to?(:booted?) && Wukong::Deploy.booted?
     end
@@ -65,24 +70,24 @@ module Anubis
       defined?(Rails) && Rails.respond_to?(:root) && Rails.root
     end
 
-    def configure_from_deploy
+    def deploy_config
       host = Wukong::Deploy.settings[:hbase][:thrift][:host] rescue nil
       port = Wukong::Deploy.settings[:hbase][:thrift][:port] rescue nil
-      configure do |c|
-        c.host = host if host
-        c.port = port if port
-      end
+      { host: host, port: port }
     end
 
-    def configure_from_rails
-      config = Rails.configuration.database_configuration      
+    def rails_config
+      config = Rails.configuration.database_configuration
       host   = config[Rails.env]['thrift']['host'] rescue nil
       port   = config[Rails.env]['thrift']['host'] rescue nil
-      configure do |c|
-        c.host = host if host
-        c.port = port if port
-      end 
+      { host: host, port: port }
     end
 
+    def configure_from conf
+      configure do |c|
+        c.host = conf[:host] if conf[:host]
+        c.port = conf[:port] if conf[:host]
+      end
+    end
   end
 end
