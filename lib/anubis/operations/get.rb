@@ -16,7 +16,8 @@ module Anubis
       end
 
       def validate
-        true
+        super
+        true        
       end
 
       def versioned_get
