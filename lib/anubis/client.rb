@@ -19,10 +19,13 @@ module Anubis
     def connect
       @transport.open
       true
+    rescue => e
+      @transport.close
+      raise Anubis::ConnectionError, e.message
     end    
     
     def connected?
-      @transport.open?      
+      @transport.open?
     end
 
     def disconnect
@@ -35,20 +38,29 @@ module Anubis
       connect
     end
 
+    def to_s
+      "#<#{self.class}:#{object_id} host:#{host.inspect} port:#{port}>"
+    end
+    
     def safely_send(message, *args)
+      raise Anubis::ConnectionError, 'Cannot perform that operation unless connected to HBase' unless connected?
       begin
-        response = send(message, *args)
-        response = true if response.nil?
-        response
+        handle_response(message, *args)
       rescue => e
-        warn e.message
-        reconnect
-        false
+        handle_error(e, message, *args)
       end
     end
 
-    def to_s
-      "#<#{self.class}:#{object_id} host:#{host.inspect} port:#{port}>"
+    def handle_response(message, *args)
+      response = send(message, *args)
+      response = true if response.nil?
+      response      
+    end
+
+    def handle_error(err, message, *args)
+      warn err.message
+      reconnect
+      false      
     end
   end
 end
