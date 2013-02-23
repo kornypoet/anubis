@@ -35,6 +35,14 @@ module Anubis
     def to_s
       "Op: #{@table} | [ #{@row_keys.join(', ')} ] x [ #{mapping.join(', ')} ]"
     end
+
+    def validate
+      t = Table.find(@table) or raise Anubis::NonexistentTableError, @table
+      @columns.each do |col| 
+        t.column_group.include? col or raise Anubis::NonexistentColumnError, col
+      end
+      true
+    end
     
     def perform
       validate
