@@ -95,3 +95,9 @@ op = t.qualifer(:my_qualifier).rows('my:row:key')
 #=> Op: my_table | [ my:row:key ] x [ column_name:my_qualifier, another_column:my_qualifier ]
 op.get
 ```
+
+The same operation created from the top-level `Anubis` module:
+
+```ruby
+Anubis.get(table: 'my_table', columns: ['column_name', 'another_column'], qualifier: 'my_qualifier', rows: ['my:row:key']) 	
+```
