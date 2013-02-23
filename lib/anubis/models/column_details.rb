@@ -2,7 +2,7 @@ module Anubis
   class ColumnDetails < Apache::Hadoop::Hbase::Thrift::ColumnDescriptor
     
     def self.from_existing table
-      Connection.safely_send(:getColumnDescriptors, table).map do |key, column|
+      Anubis.connection.safely_send(:getColumnDescriptors, table).map do |key, column|
         new(
             name:         column.name,
             versions:     column.maxVersions, 

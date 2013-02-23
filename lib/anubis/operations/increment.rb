@@ -23,7 +23,7 @@ module Anubis
         increments   = @row_keys.product(mapping)        
         @next_values = increments.inject({}) do |result, (key, column)|
           # This has to be done iteratively because the batch increment is broken in Thrift
-          result[key] = Connection.safely_send(:atomicIncrement, @table, key, column, @put_amount)      
+          result[key] = Anubis.connection.safely_send(:atomicIncrement, @table, key, column, @put_amount)      
           result
         end
       end

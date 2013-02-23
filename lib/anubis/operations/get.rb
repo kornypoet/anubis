@@ -23,7 +23,7 @@ module Anubis
       def versioned_get
         versioned_gets = @row_keys.product(mapping)        
         @results = versioned_gets.inject({}) do |result, (row_key, column)|
-          cells = Connection.safely_send(:getVer, @table, row_key, column, @get_versions, {})
+          cells = Anubis.connection.safely_send(:getVer, @table, row_key, column, @get_versions, {})
           unless cells.empty?
             cells.map!{ |cell| { column: column, value: cell.value, timestamp: cell.timestamp } }
           end
@@ -34,7 +34,7 @@ module Anubis
       
       def columned_get
         columns  = mapping.empty? ? nil : mapping
-        @results = Connection.safely_send(:getRowsWithColumns, @table, @row_keys, columns, {})
+        @results = Anubis.connection.safely_send(:getRowsWithColumns, @table, @row_keys, columns, {})
         if @results.empty?        
           puts "oh shit"
         else

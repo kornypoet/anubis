@@ -8,7 +8,7 @@ module Anubis
     #
     class << self
       def find table
-        from_existing(table) if Connection.safely_send(:getTableNames).include? table
+        from_existing(table) if Anubis.connection.safely_send(:getTableNames).include? table
       end      
       
       def find_or_create(table, *columns)
@@ -35,7 +35,7 @@ module Anubis
     # CRUD operations
     #
     def create
-      Connection.safely_send(:createTable, name, column_details)
+      Anubis.connection.safely_send(:createTable, name, column_details)
       true
     end
 
@@ -45,24 +45,24 @@ module Anubis
     
     def delete
       disable
-      Connection.safely_send(:deleteTable, name)
+      Anubis.connection.safely_send(:deleteTable, name)
       true
     end
     
     def exists?
-      Connection.safely_send(:getTableNames).include? name
+      Anubis.connection.safely_send(:getTableNames).include? name
     end
 
     def enabled?
-      exists? && Connection.safely_send(:isTableEnabled, name) 
+      exists? && Anubis.connection.safely_send(:isTableEnabled, name) 
     end
 
     def disable
-      Connection.safely_send(:disableTable, name)
+      Anubis.connection.safely_send(:disableTable, name)
     end
 
     def enable
-      Connection.safely_send(:enableTable, name)
+      Anubis.connection.safely_send(:enableTable, name)
     end
 
     #
