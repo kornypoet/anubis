@@ -68,21 +68,26 @@ describe Anubis do
     
   end
 
-  # This should be made into a proper helper
-  def test_operation params
-    Anubis::Operation.new(params[:table]).
-      columns(*params[:columns]).
-      qualifier(params[:qualifier]).
-      rows(*params[:rows])    
-  end
-
-  context '.get' do
-    let(:test_params){ {}  }
-    let(:op){ op = test_operation(test_params); op.stub(:get).and_return(self) ; op }
+  context 'operations' do
+    let(:operation){ test_operation(test_params) }
     
-    it 'performs a get operation' do
-      subject.should_receive(:operation).and_return(op)
-      subject.get(foo: 'bar')
+    # This should be made into a proper helper
+    def test_operation params
+      op = Anubis::Operation.new(params[:table]).
+      columns(*params[:columns]).
+        qualifier(params[:qualifier]).
+        rows(*params[:rows])
+      op.stub(:perform).and_return(op)
+      op
+    end
+
+    context '.get' do
+      let(:test_params){ { table: 'my_table' } }
+      
+      it 'performs a get operation' do
+        # subject.should_receive(:operation).with(test_params).and_return(operation)
+        # subject.get(test_params).validate.should be(true)
+      end
     end
   end
 end
