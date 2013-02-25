@@ -3,8 +3,20 @@ require 'gorillib/some'
 
 require 'anubis/thrift'
 require 'anubis/client'
-require 'anubis/models'
+
+require 'anubis/models/table'
+require 'anubis/models/table_schema'
+require 'anubis/models/bloom_filter'
+require 'anubis/models/column_details'
+require 'anubis/models/scanner'
+
 require 'anubis/operations'
+require 'anubis/operations/get'
+require 'anubis/operations/increment'
+require 'anubis/operations/put'
+require 'anubis/operations/delete'
+require 'anubis/operations/scan'
+
 require 'anubis/errors'
 
 module Anubis
