@@ -7,8 +7,17 @@ module Anubis
     # Class-level lookup
     #
     class << self
+      def list
+        return @list if @list
+        @list = reload_tables
+      end
+      
+      def reload_tables
+        @Anubis.connection.safely_send(:getTableNames).map{ |table| from_existing table }
+      end
+
       def find table
-        from_existing(table) if Anubis.connection.safely_send(:getTableNames).include? table
+        from_existing(table) if list.include? table
       end      
       
       def find_or_create(table, *columns)
@@ -84,6 +93,7 @@ module Anubis
     # Operation builder
     #
     def operation
+      # Use self here
       Operation.new(name)
     end
 
