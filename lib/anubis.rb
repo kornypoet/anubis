@@ -1,7 +1,12 @@
 require 'thrift'
+require 'gorillib/builder'
 require 'gorillib/some'
 
-require 'anubis/thrift'
+$:.unshift File.expand_path('../anubis/thrift', __FILE__)
+require 'anubis/thrift/hbase'
+require 'anubis/thrift/hbase_types'
+require 'anubis/thrift/hbase_constants'
+
 require 'anubis/client'
 
 require 'anubis/models/table'
