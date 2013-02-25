@@ -8,14 +8,16 @@ require 'anubis/thrift/hbase_types'
 require 'anubis/thrift/hbase_constants'
 
 require 'anubis/client'
+require 'anubis/errors'
 
 require 'anubis/models/table'
 require 'anubis/models/table_schema'
 require 'anubis/models/bloom_filter'
 require 'anubis/models/column_details'
+require 'abubis/models/result'
 require 'anubis/models/scanner'
 
-require 'anubis/operations'
+require 'anubis/operations/base'
 require 'anubis/operations/get'
 require 'anubis/operations/increment'
 require 'anubis/operations/put'
