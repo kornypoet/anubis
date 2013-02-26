@@ -14,7 +14,7 @@ require 'anubis/models/table'
 require 'anubis/models/table_schema'
 require 'anubis/models/bloom_filter'
 require 'anubis/models/column_details'
-require 'abubis/models/result'
+require 'anubis/models/result'
 require 'anubis/models/scanner'
 
 require 'anubis/operations/base'
