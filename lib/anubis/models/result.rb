@@ -4,8 +4,11 @@ module Anubis
     attr_reader :raw
     
     def initialize(options = {})
-      @raw = options[:raw]
-      
+      @raw = options[:raw]      
+    end
+
+    def [] column
+      raw[column]
     end
     
   end
