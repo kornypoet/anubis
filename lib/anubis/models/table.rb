@@ -9,11 +9,11 @@ module Anubis
     class << self
       def list
         return @list if @list
-        @list = reload_tables
+        reload_tables
       end
       
       def reload_tables
-        Anubis.connection.safely_send(:getTableNames).map{ |table| from_existing table }
+        @list = Anubis.connection.safely_send(:getTableNames).map{ |table| from_existing table }
       end
 
       def find table
@@ -44,8 +44,7 @@ module Anubis
     # CRUD operations
     #
     def create
-      Anubis.connection.safely_send(:createTable, name, column_details)
-      true
+      Anubis.connection.safely_send(:createTable, name, column_details) and refresh
     end
 
     def update(options = {})
@@ -53,13 +52,11 @@ module Anubis
     end
     
     def delete
-      disable
-      Anubis.connection.safely_send(:deleteTable, name)
-      true
+      disable and Anubis.connection.safely_send(:deleteTable, name) and refresh
     end
     
     def exists?
-      Anubis.connection.safely_send(:getTableNames).include? name
+      self.class.list.include? self
     end
 
     def enabled?
@@ -74,6 +71,10 @@ module Anubis
       Anubis.connection.safely_send(:enableTable, name)
     end
 
+    def refresh
+      !!self.class.reload_tables
+    end
+
     #
     # Information
     #
@@ -86,7 +87,7 @@ module Anubis
     end
 
     def to_s
-      "<#{self.class}[ #{name} ] => columns#{column_group}>"
+      "<#{self.class}[#{name}] => columns[#{column_group.join(', ')}]>"
     end
 
     #
