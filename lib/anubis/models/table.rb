@@ -13,11 +13,11 @@ module Anubis
       end
       
       def reload_tables
-        @Anubis.connection.safely_send(:getTableNames).map{ |table| from_existing table }
+        Anubis.connection.safely_send(:getTableNames).map{ |table| from_existing table }
       end
 
       def find table
-        from_existing(table) if list.include? table
+        list.detect{ |t| t.name == table }
       end      
       
       def find_or_create(table, *columns)
