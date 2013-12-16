@@ -1,6 +1,7 @@
 require 'thrift'
 require 'gorillib/builder'
 require 'gorillib/some'
+require 'gorillib/hash/deep_compact'
 
 $:.unshift File.expand_path('../anubis/thrift', __FILE__)
 require 'anubis/thrift/hbase'
@@ -23,8 +24,6 @@ require 'anubis/operations/increment'
 require 'anubis/operations/put'
 require 'anubis/operations/delete'
 require 'anubis/operations/scan'
-
-require 'anubis/errors'
 
 module Anubis
   
@@ -49,11 +48,11 @@ module Anubis
     end
     
     def tables
-      connection.safely_send(:getTableNames).map{ |table| Table.from_existing table }
+      Table.list
     end
         
     def get(params = {})
-      operation(params).get params[:versions]
+      operation(params).get params
     end
 
     def put(params = {})
@@ -75,10 +74,7 @@ module Anubis
   private
 
     def operation params
-      Operation.new(params[:table]).
-        columns(*params[:columns]).
-        qualifier(params[:qualifier]).
-        rows(*params[:rows])        
+      Operation.new params
     end
 
     def deploy_pack?

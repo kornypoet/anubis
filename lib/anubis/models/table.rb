@@ -94,29 +94,34 @@ module Anubis
     # Operation builder
     #
     def operation
-      # Use self here
-      Operation.new(name)
-    end
-
-    def select_by_name names
-      return column_group if names.empty?
-      names.map{ |name| column_group.detect{ |col| col == name.to_s } }.compact      
+      Operation.new(table: name, columns: column_group)
     end
 
     def columns(*names)      
-      operation.columns(*select_by_name(names))
-    end
-    
-    def qualifier(qual = nil)
-      columns.qualifier(qual)
+      operation.columns names.map(&:to_s)
     end
 
-    def rows(*keys)
-      qualifier.rows(*keys)
+    def qualifier(qual = nil)
+      operation.qualifier qual
     end
     
+    def row(key = nil)
+      operation.row key
+    end
+
     def scan(options = {}, &blk)
-      qualifier.scan(options, &blk)
+      operation.scan(options, &blk)
     end
   end
 end
+
+t = Anubis::Table.find_or_create('my_table')
+res = t.columns(:my_column).row('row_key').get versions: 1
+res[:my_column][:qual_0].value
+#=> 'some_value'
+
+res = t.qualifiers(:qual_0).row('this_row').increment by: 2
+#=> 
+#=> 3
+
+t.columns(:my_column).row('other_row').put(qual_1: 'val_1', qual_2: 'val_2')

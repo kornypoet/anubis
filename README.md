@@ -44,7 +44,7 @@ First, configure the Anubis connection:
 # By default, without configuration, Anubis will attempt to connect to localhost at port 9090	
 Anubis.configure do |c|
   c.host = 'your.moms.server'
-  c.port = 9090	  
+  c.port = 1234
 end
 ```
 

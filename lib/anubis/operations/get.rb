@@ -3,21 +3,22 @@ module Anubis
     #
     # Mixin how to 'get'
     #
-    def get(versions = nil)
-      self.extend Get
-      set_versions versions
+    def get(*parameters)
+      options   = parameters.extract_options!
+      @versions = options.delete(:versions)
+      if parameters.empty?
+        qualifier = options.keys.first
+        rows(options[qualifier])
+      else
+        rows(parameters)
+      end
       perform
     end
 
     module Get
 
-      def set_versions amt
-        @get_versions = amt
-      end
-
       def validate
-        super
-        true        
+        super and !rows.blank?        
       end
 
       def versioned_get
@@ -33,8 +34,8 @@ module Anubis
       end
       
       def columned_get
-        columns  = mapping.empty? ? nil : mapping
-        @results = Anubis.connection.safely_send(:getRowsWithColumns, @table, @row_keys, columns, {})
+        cols = mapping.empty? ? nil : mapping
+        @results = Anubis.connection.safely_send(:getRowsWithColumns, table, rows, cols, {})
         if @results.empty?        
           puts "oh shit"
         else
@@ -52,14 +53,15 @@ module Anubis
           end
         end
       end
-
+      
       def execute
-        (@get_versions && @get_versions.is_a?(Numeric)) ? versioned_get : columned_get
+        (@versions && @versions.is_a?(Numeric)) ? versioned_get : columned_get
       end
       
       def prepare_results
         @results
       end    
     end
+    include Get
   end
 end

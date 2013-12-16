@@ -1,39 +1,41 @@
 module Anubis
   class Operation
-    
-    def initialize(table, columns = [], row_keys = [])
-      @table    = table
-      @columns  = columns
-      @row_keys = row_keys
-    end
 
+    attr_accessor :table
+    
+    def initialize(options = {})
+      @table      = options[:table]
+      @columns    = options[:columns]    || []
+      @qualifiers = options[:qualifiers] || []
+      @rows       = options[:rows]
+    end
+      
     def columns(*cols)
+      return @columns if cols.empty?
       @columns = cols
       self
     end
 
-    def qualifier(qual)
-      @qualifier = qual
+    def qualifiers(*quals)
+      return @qualifiers if quals.nil?
+      @qualifers = quals
+      self
+    end
+        
+    def row(key = nil)
+      return @row if key.nil?
+      @row = key
       self
     end
 
-    def rows(*keys)
-      @row_keys = keys
-      self
-    end
-      
     def mapping
-      @qualifier ? @columns.map{ |col| [col, @qualifier].join(':') } : @columns
-    end
-
-    def to_s
-      "Op: #{@table} | [ #{@row_keys.join(', ')} ] x [ #{mapping.join(', ')} ]"
+      qualifiers.empty? ? columns : columns.product(qualifiers).join(':')
     end
 
     def validate
-      t = Table.find(@table) or raise Anubis::NonexistentTableError, @table
-      @columns.each do |col| 
-        t.column_group.include? col or raise Anubis::NonexistentColumnError, col
+      t = Table.find(table) or raise Anubis::NonexistentTableError, table
+      columns.each do |col| 
+        t.column_group.include? col.to_s or raise Anubis::NonexistentColumnError, col
       end
       true
     end
